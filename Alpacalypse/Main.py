@@ -26,7 +26,7 @@ fireballs = []
 explosions = []
 
 # world vars
-world_number = 1
+world_number = 8
 (backdrop,
  level,
  lvl_imgs,

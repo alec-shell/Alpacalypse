@@ -33,7 +33,7 @@ class Explosion(pygame.sprite.Sprite):
 
 
     def set_exp_size(self):
-        if self.src_type == "megalpaca":
+        if self.src_type == "megalopaca":
             return config.EXPLOSION_SIZE * config.MEGALPACA_EXPLOSION_SCALAR
         else:
             return config.EXPLOSION_SIZE
