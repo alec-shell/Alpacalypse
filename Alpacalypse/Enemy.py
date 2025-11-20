@@ -13,8 +13,6 @@ class Enemy(Character.Character):
     def __init__(self, img_file, x_coord, y_coord, speed, health, enemy_type, img_scaler = 1, health_scaler = 1, pacing_dist = 80):
         self.enemy_type = enemy_type
         super().__init__(img_file, x_coord, y_coord, speed, health, health_scaler, img_scaler)
-        # override default Character jump_img_list
-        self.jump_img_list = self.walk_img_list
         self.pacing_left = 1
         self.pacing_dist = pacing_dist
         self.dist_traveled = 0

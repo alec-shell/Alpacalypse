@@ -2,7 +2,7 @@
 Main.py: An epic tale of... something, or the main game loop.
 """
 
-from Character import Character
+from Player import Player
 import config
 from Explosion import Explosion
 import Maps
@@ -36,12 +36,7 @@ world_number = 1
  portal) = Maps.build_level(f"lvl_0{world_number}.txt")
 
 # player vars
-PLAYER_INST = Character(config.PLAYER_IMG_FILE,
-                        player_start_pos[0],
-                        player_start_pos[1],
-                        config.PLAYER_SPEED,
-                        config.PLAYER_HEALTH)
-player_is_alive = True
+PLAYER_INST = Player(player_start_pos[0], player_start_pos[1])
 
 
 def update_fireballs():
@@ -50,29 +45,41 @@ def update_fireballs():
         # no collision
         if collision_code == -1:
             SCREEN_INST.blit(fireball.generate_sprite_img(), (fireball.rect.x, fireball.rect.y))
-        # wall collision
         elif collision_code == -2:
-            explosions.append(Explosion(fireball.origin, fireball.rect.x, fireball.rect.y))
-            fireballs.remove(fireball)
-        # player collision
+            wall_collision(fireball)
         elif collision_code == -3:
-            explosions.append(Explosion(fireball.origin, PLAYER_INST.rect.x, PLAYER_INST.rect.centery))
-            fireballs.remove(fireball)
-            if not PLAYER_INST.is_shielding:
-                PLAYER_INST.current_health -= fireball.damage
-            if PLAYER_INST.current_health <= 0:
-                global player_is_alive
-                player_is_alive = False
-        # enemy collision
+            player_collision(fireball)
         else:
-            explosions.append(Explosion(fireball.origin,
-                                        enemies_list[collision_code].rect.x,
-                                        enemies_list[collision_code].rect.centery))
-            fireballs.remove(fireball)
-            enemies_list[collision_code].current_health -= fireball.damage
-            if enemies_list[collision_code].current_health <= 0:
-                PLAYER_INST.enemies_killed += 1
-                enemies_list.remove(enemies_list[collision_code])
+            enemy_collision(fireball, collision_code)
+
+
+def wall_collision(fireball):
+    explosions.append(Explosion(fireball.origin, fireball.rect.x, fireball.rect.y))
+    fireballs.remove(fireball)
+
+
+def player_collision(fireball):
+    explosions.append(Explosion(fireball.origin, PLAYER_INST.rect.x, PLAYER_INST.rect.centery))
+    fireballs.remove(fireball)
+    if not PLAYER_INST.is_shielding:
+        PLAYER_INST.current_health -= fireball.damage
+    if PLAYER_INST.current_health <= 0:
+        PLAYER_INST.lives -= 1
+        if PLAYER_INST.lives == 0:
+            PLAYER_INST.is_alive = False
+        else:
+            PLAYER_INST.reset(player_start_pos[0], player_start_pos[1])
+
+
+def enemy_collision(fireball, collision_code):
+    explosions.append(Explosion(fireball.origin,
+                                enemies_list[collision_code].rect.x,
+                                enemies_list[collision_code].rect.centery))
+    fireballs.remove(fireball)
+    enemies_list[collision_code].current_health -= fireball.damage
+    if enemies_list[collision_code].current_health <= 0:
+        PLAYER_INST.enemies_killed += 1
+        enemies_list.remove(enemies_list[collision_code])
 
 
 def update_explosions():
@@ -101,11 +108,10 @@ def update_items():
 
 def update_screen():
     if portal:
-        if update_lvl():
-            PLAYER_INST.is_facing_left = not PLAYER_INST.is_facing_left
+        update_lvl()
     Maps.draw_background(SCREEN_INST, lvl_imgs, backdrop)
     update_items()
-    if player_is_alive:
+    if PLAYER_INST.is_alive:
         PLAYER_INST.update(level, SCREEN_INST)
         PLAYER_INST.draw_shield_bar(SCREEN_INST)
         SCREEN_INST.blit(PLAYER_INST.generate_sprite_img(), (PLAYER_INST.rect.x, PLAYER_INST.rect.y))
@@ -132,7 +138,6 @@ def update_lvl():
     return False
 
 
-
 def events_handler():
     # detect events
     for event in pygame.event.get():
@@ -141,7 +146,7 @@ def events_handler():
             global screen_is_running
             screen_is_running = False
             quit()
-        if event.type == pygame.KEYDOWN and player_is_alive:
+        if event.type == pygame.KEYDOWN and PLAYER_INST.is_alive:
             # jump event
             if event.key == pygame.K_SPACE:
                 PLAYER_INST.jump()
@@ -156,7 +161,7 @@ def events_handler():
 
 
 def get_key_presses():
-    if player_is_alive:
+    if PLAYER_INST.is_alive:
         # detect pressed keys and update character movement
         pressed = pygame.key.get_pressed()
         # move left
