@@ -64,3 +64,7 @@ BLOCK_FILE_PATHS = {
 ###PORTAL CONFIG###
 
 PORTAL_IMG_FILE = "img/background/Portal/lvl_Portal.png"
+
+###OFF MAP####
+
+BELOW_MAP = 16 * BLOCK_SIZE

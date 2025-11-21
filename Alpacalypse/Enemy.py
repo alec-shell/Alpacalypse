@@ -24,6 +24,7 @@ class Enemy(Character.Character):
 
     def update(self, lvl_map, screen, player_x, player_top, player_bottom):
         super().update(lvl_map, screen)
+        self.has_fallen_below_floor()
         is_targeting, is_cooled_down = self.track_target(player_x, player_top, player_bottom)
         if is_targeting:
             self.is_running = False
@@ -74,7 +75,6 @@ class Enemy(Character.Character):
     def fire_fireball(self):
             return Fireball(config.BLUE_FIREBALL_FILE, self.fireball_speed, self.fireball_dmg, self.rect.centerx,
                             self.rect.y + (self.rect.height / 2), self.is_facing_left, self.enemy_type)
-
 
 
     def assign_type_settings(self):

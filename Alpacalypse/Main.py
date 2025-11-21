@@ -1,5 +1,5 @@
 """
-Main.py: An epic tale of... something, or the main game loop.
+Main.py: Main game loop.
 """
 
 from Player import Player
@@ -63,12 +63,6 @@ def player_collision(fireball):
     fireballs.remove(fireball)
     if not PLAYER_INST.is_shielding:
         PLAYER_INST.current_health -= fireball.damage
-    if PLAYER_INST.current_health <= 0:
-        PLAYER_INST.lives -= 1
-        if PLAYER_INST.lives == 0:
-            PLAYER_INST.is_alive = False
-        else:
-            PLAYER_INST.reset(player_start_pos[0], player_start_pos[1])
 
 
 def enemy_collision(fireball, collision_code):
@@ -79,7 +73,6 @@ def enemy_collision(fireball, collision_code):
     enemies_list[collision_code].current_health -= fireball.damage
     if enemies_list[collision_code].current_health <= 0:
         PLAYER_INST.enemies_killed += 1
-        enemies_list.remove(enemies_list[collision_code])
 
 
 def update_explosions():
@@ -93,10 +86,24 @@ def update_explosions():
 
 def update_enemies():
     for enemy in enemies_list[:]:
-        fireball = enemy.update(level, SCREEN_INST, PLAYER_INST.rect.x, PLAYER_INST.rect.top, PLAYER_INST.rect.bottom)
-        if fireball:
-            fireballs.append(fireball)
-        SCREEN_INST.blit(enemy.generate_sprite_img(), (enemy.rect.x, enemy.rect.y))
+        enemy.has_died()
+        if enemy.is_alive:
+            fireball = enemy.update(level, SCREEN_INST, PLAYER_INST.rect.x, PLAYER_INST.rect.top, PLAYER_INST.rect.bottom)
+            if fireball:
+                fireballs.append(fireball)
+            SCREEN_INST.blit(enemy.generate_sprite_img(), (enemy.rect.x, enemy.rect.y))
+        else:
+            enemies_list.remove(enemy)
+
+
+def update_player():
+    PLAYER_INST.has_fallen_below_floor()
+    if PLAYER_INST.has_died():
+        PLAYER_INST.reset(player_start_pos[0], player_start_pos[1])
+    if PLAYER_INST.is_alive:
+        PLAYER_INST.update(level, SCREEN_INST)
+        PLAYER_INST.display_stats(SCREEN_INST, world_number)
+        SCREEN_INST.blit(PLAYER_INST.generate_sprite_img(), (PLAYER_INST.rect.x, PLAYER_INST.rect.y))
 
 
 def update_items():
@@ -111,13 +118,10 @@ def update_screen():
         update_lvl()
     Maps.draw_background(SCREEN_INST, lvl_imgs, backdrop)
     update_items()
-    if PLAYER_INST.is_alive:
-        PLAYER_INST.update(level, SCREEN_INST)
-        PLAYER_INST.draw_shield_bar(SCREEN_INST)
-        SCREEN_INST.blit(PLAYER_INST.generate_sprite_img(), (PLAYER_INST.rect.x, PLAYER_INST.rect.y))
+    update_fireballs()
+    update_player()
     if portal:
         portal.generate_sprite_img(SCREEN_INST)
-    update_fireballs()
     update_enemies()
     update_explosions()
     PLAYER_INST.display_stats(SCREEN_INST, world_number)
@@ -145,7 +149,6 @@ def events_handler():
         if event.type == pygame.QUIT:
             global screen_is_running
             screen_is_running = False
-            quit()
         if event.type == pygame.KEYDOWN and PLAYER_INST.is_alive:
             # jump event
             if event.key == pygame.K_SPACE:

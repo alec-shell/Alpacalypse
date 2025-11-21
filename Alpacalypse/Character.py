@@ -20,7 +20,7 @@ class Character(pygame.sprite.Sprite):
         self.walk_img_index = 0
         self.rect = self.walk_img_list[0].get_rect()
         self.img_time = time.time()
-        self.img_update_rate = .1
+        self.img_update_rate = .08
         # position vars
         self.rect.centerx = x_coord
         self.rect.bottom = y_coord - config.BLOCK_SIZE
@@ -31,6 +31,8 @@ class Character(pygame.sprite.Sprite):
         # health vars
         self.start_health = health * health_scaler
         self.current_health = self.start_health
+        self.is_alive = True
+        self.lives = 1
         # jumping vars
         self.jump_strength = -10
         self.velocity = 0
@@ -43,7 +45,9 @@ class Character(pygame.sprite.Sprite):
 
     def update(self, lvl_map, screen):
         self.apply_gravity()
+        self.has_fallen_below_floor()
         self.detect_floor(lvl_map)
+        self.draw_health_bar(screen)
 
 
     def generate_sprite_img(self):
@@ -154,6 +158,13 @@ class Character(pygame.sprite.Sprite):
         return False
 
 
+    def has_fallen_below_floor(self):
+        if self.rect.bottom >= config.BELOW_MAP:
+            self.current_health = 0
+            return True
+        return False
+
+
     def fireball_is_cooled_down(self):
         if time.time() - self.fireball_time > self.fireball_cooldown:
             self.fireball_time = time.time()
@@ -166,3 +177,19 @@ class Character(pygame.sprite.Sprite):
             return Fireball(config.ORANGE_FIREBALL_FILE, config.PLAYER_FIREBALL_SPEED, config.PLAYER_FIREBALL_DAMAGE, self.rect.centerx,
                             self.rect.y + (self.rect.height / 2), self.is_facing_left, "player")
         return None
+
+
+    def draw_health_bar(self, screen):
+        pygame.draw.rect(screen, "black", pygame.Rect(self.rect.x - 12, self.rect.y - 12, 54, 14))
+        pygame.draw.rect(screen, "red", pygame.Rect(self.rect.x - 10, self.rect.y - 10, 50, 10))
+        pygame.draw.rect(screen, "green", pygame.Rect(self.rect.x - 10, self.rect.y - 10,
+                         50 * (self.current_health / self.start_health), 10))
+
+
+    def has_died(self):
+        if self.current_health <= 0:
+            self.lives -= 1
+            if self.lives <= 0:
+                self.is_alive = False
+            return True
+        return False

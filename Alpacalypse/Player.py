@@ -36,8 +36,7 @@ class Player(Character.Character):
         self.last_use = time.time() - self.shield_cooldown
         # kill count
         self.enemies_killed = 0
-        # player state
-        self.is_alive = True
+        # player lives
         self.lives = 3
 
 
@@ -52,8 +51,8 @@ class Player(Character.Character):
             self.can_shield()
         if not self.is_shielding:
             self.replenish_shield()
-        self.draw_health_bar(screen)
         self.draw_shield_bar(screen)
+        self.draw_health_bar(screen)
 
 
     def reset(self, start_x, start_y):
@@ -129,13 +128,6 @@ class Player(Character.Character):
             self.available_shield = self.total_shield
 
 
-    def draw_health_bar(self, screen):
-        pygame.draw.rect(screen, "black", pygame.Rect(self.rect.x - 12, self.rect.y - 12, 54, 14))
-        pygame.draw.rect(screen, "red", pygame.Rect(self.rect.x - 10, self.rect.y - 10, 50, 10))
-        pygame.draw.rect(screen, "green", pygame.Rect(self.rect.x - 10, self.rect.y - 10,
-                         50 * (self.current_health / self.start_health), 10))
-
-
     def draw_shield_bar(self, screen):
         pygame.draw.rect(screen, "black", pygame.Rect(self.rect.x - 12, self.rect.y - 24, 54, 14))
         pygame.draw.rect(screen, "yellow", pygame.Rect(self.rect.x - 10, self.rect.y - 22, 50, 10))
@@ -146,11 +138,13 @@ class Player(Character.Character):
 
 
     def display_stats(self, screen, world_number):
-        pygame.draw.rect(screen, "black", pygame.Rect(10, 10, 100, 42))
         font = pygame.font.SysFont("Arial", 12)
         kill_count = font.render(f"Kill Count: {self.enemies_killed}", True, "green")
         max_health = font.render(f"Health: {self.current_health}/{self.start_health}", True, "green")
         level_count = font.render(f"Level: {world_number}", True, "green")
+        lives_left = font.render(f"Lives: {self.lives}", True, "green")
+        pygame.draw.rect(screen, "black", pygame.Rect(10, 10, 100, 54))
         screen.blit(kill_count, (12, 12))
         screen.blit(max_health, (12, 24))
         screen.blit(level_count, (12, 36))
+        screen.blit(lives_left, (12, 48))
