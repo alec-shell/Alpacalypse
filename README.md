@@ -1,6 +1,7 @@
 # Alpacalypse
 This game is a work in progress, and is very much a pet project.
-The general gist is you are a wizard fighting evil fireball-shooting llamas.
+The general gist is you are a wizard fighting evil fireball-shooting llamas. 
+Screenshots available in the Screenshots folder. 
 Thank you for taking a look! 
 
 CONTROLS:
